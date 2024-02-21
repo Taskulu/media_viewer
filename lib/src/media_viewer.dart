@@ -967,6 +967,8 @@ class _MediaViewerState extends State<MediaViewer>
       transform = Matrix4.identity()
         ..translate(centerTranslationOffset.dx, centerTranslationOffset.dy)
         ..multiply(transform);
+    } else if (_childKey.currentContext == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
     }
 
     Widget child = ClipRect(
