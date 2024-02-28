@@ -987,27 +987,41 @@ class _MediaViewerState extends State<MediaViewer>
                       .addPostFrameCallback((_) => setState(() {}));
                   return true;
                 },
-                child: SizeChangedLayoutNotifier(
-                  child: widget.child,
-                ),
+                child: SizeChangedLayoutNotifier(child: widget.child),
               )),
         ),
       ),
     );
 
-    return Listener(
-      key: _parentKey,
-      onPointerSignal: _receivedPointerSignal,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque, // Necessary when panning off screen.
-        onScaleEnd: _onScaleEnd,
-        onScaleStart: _onScaleStart,
-        onScaleUpdate: _onScaleUpdate,
-        onDoubleTap: _onDoubleTap,
-        onDoubleTapDown: _onDoubleTapDown,
-        trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
-        trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
-        child: child,
+    return NotificationListener<SizeChangedLayoutNotification>(
+      onNotification: (_) {
+        // Obtain new matrix when size changes
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _transformationController!.value = _matrixTranslate(
+            _transformationController!.value,
+            const Offset(0.000000001, 0.000000001),
+          );
+          setState(() {});
+        });
+        return true;
+      },
+      child: SizeChangedLayoutNotifier(
+        child: Listener(
+          key: _parentKey,
+          onPointerSignal: _receivedPointerSignal,
+          child: GestureDetector(
+            behavior:
+                HitTestBehavior.opaque, // Necessary when panning off screen.
+            onScaleEnd: _onScaleEnd,
+            onScaleStart: _onScaleStart,
+            onScaleUpdate: _onScaleUpdate,
+            onDoubleTap: _onDoubleTap,
+            onDoubleTapDown: _onDoubleTapDown,
+            trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
+            trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
+            child: child,
+          ),
+        ),
       ),
     );
   }
